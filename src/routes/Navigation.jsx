@@ -64,7 +64,7 @@ function Navigation() {
                             <Route path="/" element={<Main />} />
                             <Route path="*" element={<Navigate to="/" />} />
                             <Route path="/profile" element={<Profile user={loggedInUserDetails} />} />
-                            <Route path="/change-password" element={<ChangePassword />} />
+                            <Route path="/change-password" element={<ChangePassword user={loggedInUserDetails} />} />
                         </Routes>
                     </>
                 ) : (
@@ -74,7 +74,7 @@ function Navigation() {
                         <Route path="/forgot-password" element={<ForgotPassword />} />
                         <Route path="/reset-password/:token" element={<ResetPassword />} />
 
-                        
+
                     </Routes>
                 )}
             </div>
