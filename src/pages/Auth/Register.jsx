@@ -1,34 +1,35 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { registerSchema } from '../../validations/validation';
 
 function RegisterForm({ onRegister }) {
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        reset
+    } = useForm({
+        resolver: yupResolver(registerSchema)
+    })
 
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [mobileNumber, setMobileNumber] = useState('');
-
-    const handleRegisterSubmit = async (e) => {
-        e.preventDefault();
-        const formData = {
-            first_name: firstName,
-            last_name: lastName,
-            email,
-            password,
-            mobile_number: mobileNumber,
-        }
-
+    const onSubmitHandler = async (data) => {
         try {
+            console.log({ data });
             const apiUrl = `${process.env.REACT_APP_BASE_URL}/signup`
             const response = await fetch(apiUrl, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    first_name: data.first_name,
+                    last_name: data.last_name,
+                    email: data.email,
+                    password: data.password,
+                    mobile_number: data.mobile_number,
+                }),
+            })
 
             const responseData = await response.json();
             if (!response.ok) {
@@ -36,9 +37,9 @@ function RegisterForm({ onRegister }) {
             }
             toast.success(responseData.message);
             onRegister(responseData);
+            reset();
         } catch (error) {
             toast.error(error.message);
-
         }
     }
     return (
@@ -55,17 +56,16 @@ function RegisterForm({ onRegister }) {
                                 <h6 className="font-weight-light">
                                     Signing up is easy. It only takes a few steps
                                 </h6>
-                                <form className="pt-3" onSubmit={handleRegisterSubmit}>
+                                <form className="pt-3" onSubmit={handleSubmit(onSubmitHandler)}>
                                     <div className="form-group">
                                         <input
                                             type="text"
                                             className="form-control form-control-lg"
                                             id="exampleInputUsername1"
                                             placeholder="First Name"
-                                            name="first_name"
-                                            value={firstName}
-                                            onChange={(e) => setFirstName(e.target.value)}
+                                            {...register("first_name")}
                                         />
+                                        {errors.first_name && <p className="error">{errors.first_name.message}</p>}
                                     </div>
                                     <div className="form-group">
                                         <input
@@ -73,11 +73,9 @@ function RegisterForm({ onRegister }) {
                                             className="form-control form-control-lg"
                                             id="exampleInputUsername1"
                                             placeholder="Last Name"
-                                            name="last_name"
-                                            value={lastName}
-                                            onChange={(e) => setLastName(e.target.value)}
-
+                                            {...register("last_name")}
                                         />
+                                        {errors.last_name && <p className="error">{errors.last_name.message}</p>}
                                     </div>
                                     <div className="form-group">
                                         <input
@@ -85,10 +83,9 @@ function RegisterForm({ onRegister }) {
                                             className="form-control form-control-lg"
                                             id="exampleInputEmail1"
                                             placeholder="Email"
-                                            name="email"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
+                                            {...register("email")}
                                         />
+                                        {errors.email && <p className="error">{errors.email.message}</p>}
                                     </div>
                                     <div className="form-group">
                                         <input
@@ -96,10 +93,9 @@ function RegisterForm({ onRegister }) {
                                             className="form-control form-control-lg"
                                             id="exampleInputPassword1"
                                             placeholder="Password"
-                                            name="password"
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
+                                            {...register("password")}
                                         />
+                                        {errors.password && <p className="error">{errors.password.message}</p>}
                                     </div>
                                     <div className="form-group">
                                         <input
@@ -107,10 +103,10 @@ function RegisterForm({ onRegister }) {
                                             className="form-control form-control-lg"
                                             id="exampleInputEmail1"
                                             placeholder="Mobile Number"
-                                            name="mobile_number"
-                                            value={mobileNumber}
-                                            onChange={(e) => setMobileNumber(e.target.value)}
+                                            {...register("mobile_number")}
                                         />
+                                        {errors.mobile_number && <p className="error">{errors.mobile_number.message}</p>}
+
                                     </div>
                                     <div className="mb-4">
                                         <div className="form-check">

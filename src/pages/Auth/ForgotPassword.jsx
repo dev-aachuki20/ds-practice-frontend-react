@@ -1,19 +1,24 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { forgotPasswordSchema } from '../../validations/validation'
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
 
 function ForgotPassword() {
-    const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const handleForgotPassword = async (e) => {
-        e.preventDefault();
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        reset
+    } = useForm({
+        resolver: yupResolver(forgotPasswordSchema)
+    })
+
+    const onSubmitHandler = async (data) => {
         setLoading(true);
-
-        if (!email) {
-            return toast.success("Please enter you email");
-        }
-
         try {
             const apiUrl = `${process.env.REACT_APP_BASE_URL}/forgot-password`;
             const response = await fetch(apiUrl, {
@@ -21,7 +26,7 @@ function ForgotPassword() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ email }),
+                body: JSON.stringify({ email: data.email }),
             });
 
             const responseData = await response.json();
@@ -29,6 +34,7 @@ function ForgotPassword() {
                 throw new Error(responseData.message || 'Sorry');
             }
             toast.success(responseData.message);
+            reset();
         } catch (error) {
             toast.error(error.message);
         } finally {
@@ -44,16 +50,16 @@ function ForgotPassword() {
                         <div className="col-lg-4 mx-auto">
                             <div className="auth-form-light text-left p-5">
                                 <h4>Forgot Password</h4>
-                                <form className="pt-3" onSubmit={handleForgotPassword}>
+                                <form className="pt-3" onSubmit={handleSubmit(onSubmitHandler)}>
                                     <div className="form-group">
                                         <input
                                             type="email"
                                             className="form-control form-control-lg"
                                             id="exampleInputEmail1"
                                             placeholder="Email"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
+                                            {...register("email")}
                                         />
+                                        {errors.email && <p className="error">{errors.email.message}</p>}
                                     </div>
                                     <div className="mt-3 d-grid gap-2">
                                         <button type='submit' className="btn btn-block btn-gradient-primary btn-lg font-weight-medium auth-form-btn"

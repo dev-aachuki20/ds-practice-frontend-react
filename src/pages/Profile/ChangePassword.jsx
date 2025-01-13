@@ -2,30 +2,49 @@ import React, { useState } from "react";
 import Sidebar from "../../components/layouts/Sidebar";
 import Footer from "../../components/layouts/Footer";
 import { toast } from "react-toastify";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useForm } from "react-hook-form";
+import { changePasswordSchema } from "../../validations/validation";
 
 function ChangePassword({ user }) {
 
-    const [oldPassword, setOldPassword] = useState('');
-    const [newPassword, setNewPassword] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const handleChangePassword = async (e) => {
-        e.preventDefault();
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        reset
+    } = useForm({
+        resolver: yupResolver(changePasswordSchema),
+        defaultValues: {
+            oldPassword: '',
+            newPassword: ''
+        }
+    })
+
+    const onSubmitHandler = async (data) => {
         setLoading(true);
+
         const token = localStorage.getItem('authToken');
         if (!token) {
-            return toast.success('Token not found. Please login again.')
+            toast.success('Token not found. Please login again.')
+            setLoading(false);
+            return;
         }
-        try {
 
+        const { oldPassword, newPassword } = data;
+        const updatedData = { oldPassword, newPassword };
+
+        try {
             const apiUrl = `${process.env.REACT_APP_BASE_URL}/profile/change-password`;
             const response = await fetch(apiUrl, {
-                method: 'post',
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ oldPassword, newPassword }),
+                body: JSON.stringify(updatedData),
             })
 
             const responseData = await response.json();
@@ -35,9 +54,11 @@ function ChangePassword({ user }) {
             }
 
             toast.success(responseData.message)
+            reset();
 
         } catch (error) {
             toast.error(error.message);
+            return;
         } finally {
             setLoading(false);
         }
@@ -61,16 +82,14 @@ function ChangePassword({ user }) {
                                 <div className="card">
                                     <div className="card-body">
                                         <div className="profile-class">
-                                            <form onSubmit={handleChangePassword} >
+                                            <form onSubmit={handleSubmit(onSubmitHandler)} >
                                                 <div className="row mb-3">
                                                     <label htmlFor="inputEmail3" className="col-sm-4 col-form-label">
                                                         Old password
                                                     </label>
                                                     <div className="col-sm-8">
-                                                        <input type="password" className="form-control" id="inputEmail3"
-                                                            value={oldPassword}
-                                                            onChange={(e) => setOldPassword(e.target.value)}
-                                                        />
+                                                        <input type="password" className="form-control" id="inputEmail3" {...register("oldPassword")} />
+                                                        {errors.oldPassword && <p className="error">{errors.oldPassword.message}</p>}
                                                     </div>
                                                 </div>
                                                 <div className="row mb-3">
@@ -78,15 +97,13 @@ function ChangePassword({ user }) {
                                                         New password
                                                     </label>
                                                     <div className="col-sm-8">
-                                                        <input type="password" className="form-control" id="inputEmail3"
-                                                            value={newPassword}
-                                                            onChange={(e) => setNewPassword(e.target.value)}
-                                                        />
+                                                        <input type="password" className="form-control" id="inputEmail3" {...register("newPassword")} />
+                                                        {errors.newPassword && <p className="error">{errors.newPassword.message}</p>}
                                                     </div>
                                                 </div>
 
-                                                <button type="submit" className="btn btn-primary">
-                                                    Update
+                                                <button type="submit" className="btn btn-primary" disabled={loading}>
+                                                    {loading ? 'Updating...' : 'Update'}
                                                 </button>
                                             </form>
                                         </div>

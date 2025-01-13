@@ -1,55 +1,119 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Sidebar from "../../components/layouts/Sidebar";
 import Footer from "../../components/layouts/Footer";
 import { toast } from "react-toastify";
-function Profile({ user }) {
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { updateProfileSchema } from '../../validations/validation'
 
-    const [firstName, setFirstName] = useState(user?.first_name || '');
-    const [lastName, setLastName] = useState(user?.last_name || '');
-    const [email, setEmail] = useState(user?.email || '');
-    const [mobileNumber, setMobileNumber] = useState(user?.mobile_number || '');
 
-    const apiUrl = `${process.env.REACT_APP_BASE_URL}/profile/update`;
+function Profile() {
+    const [loading, setLoading] = useState(false);
+    const [user, setUser] = useState(null);
 
-    const handleUpdateProfile = async (e) => {
-        e.preventDefault();
-        const token = localStorage.getItem('authToken');
-        if (!token) {
-            return toast.success('Token not found. Please login again.')
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        reset
+    } = useForm({
+        resolver: yupResolver(updateProfileSchema),
+        defaultValues: {
+            first_name: '',
+            last_name: '',
+            mobile_number: '',
+            email: "",
         }
+    })
 
-        try {
-            const formData = {
-                first_name: firstName,
-                last_name: lastName,
-                mobile_number: mobileNumber
+    // Update form values when `user` changes
+    useEffect(() => {
+
+        const fetchUserProfile = async () => {
+            setLoading(true);
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                toast.success('Token not found. Please login again.');
+                setLoading(false);
+                return;
             }
 
+            try {
+                const apiUrl = `${process.env.REACT_APP_BASE_URL}/profile`;
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    }
+                });
+
+                const responseData = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(responseData.message || 'Failed to fetch updated user data.');
+                }
+
+                setUser(responseData.data);
+                reset(responseData.data);
+            } catch (error) {
+                toast.error(error.message || 'Error updating profile.');
+                return;
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchUserProfile();
+    }, [reset]);
+
+    const onSubmitHandler = async (data) => {
+        setLoading(true);
+
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            toast.success('Token not found. Please login again.');
+            setLoading(false);
+            return;
+        }
+
+
+        const { first_name, last_name, mobile_number } = data;
+        const updatedData = { first_name, last_name, mobile_number };
+        try {
+            const apiUrl = `${process.env.REACT_APP_BASE_URL}/profile/update`;
             const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(updatedData)
             });
 
             const responseData = await response.json();
-
             if (!response.ok) {
                 throw new Error(responseData.message || 'Unable to update profile.');
             }
 
             toast.success(responseData.message);
 
+            setUser(responseData.data);
+            reset(responseData.data);
 
         } catch (error) {
             toast.error(error.message || 'Error updating profile.');
+            return;
+        } finally {
+            setLoading(false);
         }
     };
 
+    if (loading && !user) {
+        return <div className="spinner-border text-primary" role="status"><span className="visually-hidden">Loading...</span></div>;
+    }
+
     if (!user) {
-        return toast.error('No user data available. Please log in.');
+        return <div className="alert alert-danger">No user data available.</div>;
     }
 
     return (
@@ -73,15 +137,15 @@ function Profile({ user }) {
                                         <div className="profile-class">
                                             <div className="row">
                                                 <div className="col-md-12">
-                                                    <form onSubmit={handleUpdateProfile}>
+                                                    <form onSubmit={handleSubmit(onSubmitHandler)}>
                                                         <div className="row mb-3">
                                                             <label htmlFor="inputEmail3" className="col-sm-2 col-form-label">
                                                                 First name
                                                             </label>
                                                             <div className="col-sm-10">
-                                                                <input type="text" className="form-control" id="inputEmail3" value={firstName}
-                                                                    onChange={(e) => setFirstName(e.target.value)}
-                                                                />
+                                                                <input type="text" className="form-control" id="inputEmail3" disabled={loading} {...register("first_name")} />
+                                                                {errors.first_name && <p className="error">{errors.first_name.message}</p>}
+
                                                             </div>
                                                         </div>
                                                         <div className="row mb-3">
@@ -89,9 +153,9 @@ function Profile({ user }) {
                                                                 Last name
                                                             </label>
                                                             <div className="col-sm-10">
-                                                                <input type="text" className="form-control" id="inputEmail3"
-                                                                    value={lastName}
-                                                                    onChange={(e) => setLastName(e.target.value)} />
+                                                                <input type="text" className="form-control" id="inputEmail3" disabled={loading} {...register("last_name")} />
+                                                                {errors.last_name && <p className="error">{errors.last_name.message}</p>}
+
                                                             </div>
                                                         </div>
                                                         <div className="row mb-3">
@@ -99,8 +163,8 @@ function Profile({ user }) {
                                                                 Email
                                                             </label>
                                                             <div className="col-sm-10">
-                                                                <input disabled readOnly type="email" className="form-control" id="inputEmail3"
-                                                                    value={email} onChange={(e) => setEmail(e.target.value)} />
+                                                                <input type="email" className="form-control" id="inputEmail3" disabled={loading} {...register("email")} />
+                                                                {errors.email && <p className="error">{errors.email.message}</p>}
                                                             </div>
                                                         </div>
                                                         <div className="row mb-3">
@@ -108,14 +172,23 @@ function Profile({ user }) {
                                                                 Mobile No.
                                                             </label>
                                                             <div className="col-sm-10">
-                                                                <input type="number" className="form-control" id="inputPassword3"
-                                                                    value={mobileNumber}
-                                                                    onChange={(e) => setMobileNumber(e.target.value)} />
+                                                                <input type="text" className="form-control" id="inputPassword3" disabled={loading} {...register("mobile_number")} />
+                                                                {errors.mobile_number && <p className="error">{errors.mobile_number.message}</p>}
                                                             </div>
                                                         </div>
-
-                                                        <button type="submit" className="btn btn-primary">
-                                                            Update
+                                                        <button type="submit" className="btn btn-primary" disabled={loading}>
+                                                            {loading ? (
+                                                                <>
+                                                                    <span
+                                                                        className="spinner-border spinner-border-sm"
+                                                                        role="status"
+                                                                        aria-hidden="true"
+                                                                    ></span>{" "}
+                                                                    Updating...
+                                                                </>
+                                                            ) : (
+                                                                "Update"
+                                                            )}
                                                         </button>
                                                     </form>
                                                 </div>

@@ -1,36 +1,44 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { loginSchema } from '../../validations/validation';
 
 function LoginForm({ onLogin }) {
-
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        reset
+    } = useForm({
+        resolver: yupResolver(loginSchema),
+    });
+    const onSubmitHandler = async (data) => {
         try {
             const apiUrl = `${process.env.REACT_APP_BASE_URL}/login`;
             const response = await fetch(apiUrl, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, password }),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: data.email,
+                    password: data.password
+                }),
             });
 
             const responseData = await response.json();
-
             if (!response.ok) {
                 throw new Error(responseData.message || 'Invalid login credentials');
             }
 
             toast.success(responseData.message);
             onLogin(responseData);
+            reset();
         } catch (error) {
             toast.error(error.message || 'Something went wrong.');
         }
     };
+
     return (
         <div className="container-scroller">
             <div className="container-fluid page-body-wrapper full-page-wrapper">
@@ -43,16 +51,16 @@ function LoginForm({ onLogin }) {
                                 </div>
                                 <h4>Hello! let&apos;s get started</h4>
                                 <h6 className="font-weight-light">Sign in to continue.</h6>
-                                <form className="pt-3" onSubmit={handleSubmit}>
+                                <form onSubmit={handleSubmit(onSubmitHandler)}>
                                     <div className="form-group">
                                         <input
                                             type="email"
                                             className="form-control form-control-lg"
                                             id="exampleInputEmail1"
                                             placeholder="Username"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
+                                            {...register("email")}
                                         />
+                                        {errors.email && <p className="error">{errors.email.message}</p>}
                                     </div>
                                     <div className="form-group">
                                         <input
@@ -60,21 +68,14 @@ function LoginForm({ onLogin }) {
                                             className="form-control form-control-lg"
                                             id="exampleInputPassword1"
                                             placeholder="Password"
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-
+                                            {...register("password")}
                                         />
+                                        {errors.password && <p className="error">{errors.password.message}</p>}
                                     </div>
                                     <div className="mt-3 d-grid gap-2">
                                         <button type='submit' className="btn btn-block btn-gradient-primary btn-lg font-weight-medium auth-form-btn">
                                             SIGN IN
                                         </button>
-                                        {/* <a
-                                            className="btn btn-block btn-gradient-primary btn-lg font-weight-medium auth-form-btn"
-                                            href="../../index.html"
-                                        >
-                                            SIGN IN
-                                        </a> */}
                                     </div>
                                     <div className="my-2 d-flex justify-content-between align-items-center">
                                         <div className="form-check">
@@ -86,15 +87,6 @@ function LoginForm({ onLogin }) {
                                             Forgot password?
                                         </Link>
                                     </div>
-                                    {/* <div className="mb-2 d-grid gap-2">
-                                        <button
-                                            type="button"
-                                            className="btn btn-block btn-facebook auth-form-btn"
-                                        >
-                                            <i className="mdi mdi-facebook me-2" />
-                                            Connect using facebook
-                                        </button>
-                                    </div> */}
                                     <div className="text-center mt-4 font-weight-light">
                                         Don&apos;t have an account?
                                         <Link to="/register" className="text-primary">
