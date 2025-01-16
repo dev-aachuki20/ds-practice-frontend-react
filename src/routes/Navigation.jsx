@@ -9,6 +9,7 @@ import ChangePassword from '../pages/Profile/ChangePassword';
 import ForgotPassword from "../pages/Auth/ForgotPassword";
 import ResetPassword from "../pages/Auth/ResetPassword";
 import { toast } from "react-toastify";
+import UserList from "../pages/User/UserList";
 
 function Navigation() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -61,6 +62,7 @@ function Navigation() {
                             <Route path="*" element={<Navigate to="/" />} />
                             <Route path="/profile" element={<Profile />} />
                             <Route path="/change-password" element={<ChangePassword user={loggedInUserDetails} />} />
+                            <Route path="/users" element={<UserList />} />
                         </Routes>
                     </>
                 ) : (
