@@ -12,6 +12,11 @@ import {
     InputLabel,
     Select,
     MenuItem,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Button
 } from '@mui/material';
 import Pagination from '@mui/material/Pagination';
 
@@ -20,6 +25,8 @@ function DataTable({ rows, columns }) {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortConfig, setSortConfig] = useState({ key: '', direction: '' });
+    const [openDialog, setOpenDialog] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
 
 
     const roleMapping = {
@@ -63,6 +70,18 @@ function DataTable({ rows, columns }) {
         (page - 1) * rowsPerPage,
         page * rowsPerPage
     );
+
+    // Open Modal
+    const handleView = (user) => {
+        setSelectedUser(user);
+        setOpenDialog(true);
+    };
+
+    // Close Modal
+    const handleCloseDialog = () => {
+        setOpenDialog(false);
+        setSelectedUser(null);
+    };
 
     return (
         <div>
@@ -110,12 +129,23 @@ function DataTable({ rows, columns }) {
                     <TableBody>
                         {paginatedRows.map((row, index) => (
                             <TableRow key={index}>
-                                <TableCell>{(page - 1) * rowsPerPage + index + 1}</TableCell> { }
+                                <TableCell>{(page - 1) * rowsPerPage + index + 1}</TableCell>
                                 {columns.slice(1).map((column) => (
                                     <TableCell key={column.key} >
                                         {column.key == 'role' ? roleMapping[row[column.key]] || row[column.key] : row[column.key]}
                                     </TableCell>
                                 ))}
+                                <TableCell style={{ marginLeft: 0, paddingLeft: 0 }}>
+                                    <Button
+                                        variant="outlined"
+                                        color="primary"
+                                        size="small"
+                                        onClick={() => handleView(row)}
+                                    >
+                                        View
+                                    </Button>
+                                </TableCell>
+
                             </TableRow>
                         ))}
                     </TableBody>
@@ -132,6 +162,43 @@ function DataTable({ rows, columns }) {
                 variant="outlined"
                 sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}
             />
+
+
+
+            {/* Dialog for User Details */}
+            <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth>
+                <DialogTitle>User Details</DialogTitle>
+                <DialogContent>
+                    {selectedUser ? (
+                        <div>
+                            {Object.entries({
+                                first_name: "First Name",
+                                last_name: "Last Name",
+                                email: "Email Address",
+                                mobile_number: "Mobile Number",
+                                role: "Role",
+                                createdAt: "Account Created",
+                            }).map(([key, label]) => (
+                                <p key={key}>
+                                    <strong>{label}:</strong>
+                                    {key === "role" ? (
+                                        selectedUser.role === 1 ? "Admin" : "User"
+                                    ) : (
+                                        selectedUser[key]
+                                    )}
+                                </p>
+                            ))}
+                        </div>
+                    ) : (
+                        <p>No details available</p>
+                    )}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseDialog} color="primary">
+                        Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 }

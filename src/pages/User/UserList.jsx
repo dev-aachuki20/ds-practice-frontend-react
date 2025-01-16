@@ -15,6 +15,7 @@ function UserList() {
         { key: "email", label: "Email" },
         { key: "mobile_number", label: "Mobile Number" },
         { key: "createdAt", label: "Created At" },
+        { key: "action", label: "Action" },
     ];
 
     useEffect(() => {
