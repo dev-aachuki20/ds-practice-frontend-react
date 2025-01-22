@@ -31,3 +31,17 @@ export const changePasswordSchema = yup.object().shape({
     oldPassword: yup.string().required('Old password is required.').min(6, 'Old password must be at least 6 characters').max(32).trim(),
     newPassword: yup.string().required('New password is required.').min(8, 'Old password must be at least 8 characters').max(32).trim(),
 });
+
+export const postSchema = yup.object().shape({
+    title: yup.string().required("Title is required").trim(),
+    description: yup.string().required("Description is required").trim(),
+    // image: yup.string().required("Image is required"),
+    image: yup
+        .mixed()
+        // .test(
+        //     "fileList-not-empty",
+        //     "At least one image is required",
+        //     (value) => value && value.length > 0
+        // )
+        .required("Image is required"),
+});

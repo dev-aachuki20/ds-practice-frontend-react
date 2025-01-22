@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from '../components/layouts/Navbar';
 import Main from '../components/layouts/Main';
 import LoginForm from '../pages/Auth/Login';
@@ -10,6 +10,9 @@ import ForgotPassword from "../pages/Auth/ForgotPassword";
 import ResetPassword from "../pages/Auth/ResetPassword";
 import { toast } from "react-toastify";
 import UserList from "../pages/User/UserList";
+import PostList from "../pages/Post/PostList";
+import PostCreate from "../pages/Post/PostCreate";
+import PostEdit from "../pages/Post/PostEdit";
 
 function Navigation() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -39,8 +42,6 @@ function Navigation() {
         setLoggedInUserDetails(null);
         localStorage.removeItem('authToken');
         toast.success("Logout Successfully");
-        // navigate('/');
-        // return <Navigate to="/" />;
 
     }
 
@@ -63,6 +64,10 @@ function Navigation() {
                             <Route path="/profile" element={<Profile />} />
                             <Route path="/change-password" element={<ChangePassword user={loggedInUserDetails} />} />
                             <Route path="/users" element={<UserList />} />
+                            <Route path="/posts" element={<PostList />} />
+                            <Route path="/posts/create" element={<PostCreate />} />
+                            <Route path="/posts/edit/:postId" element={<PostEdit />} />
+
                         </Routes>
                     </>
                 ) : (

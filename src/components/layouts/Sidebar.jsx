@@ -30,6 +30,12 @@ function Sidebar() {
                         <i className="mdi mdi-account-multiple menu-icon"></i>
                     </Link>
                 </li>
+                <li className="nav-item">
+                    <Link className="nav-link" to="/posts">
+                        <span className="menu-title">Posts</span>
+                        <i className="mdi mdi-pencil menu-icon"></i>
+                    </Link>
+                </li>
                 {/* <li className="nav-item">
                         <a className="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
                             <span className="menu-title">Basic UI Elements</span>

@@ -19,8 +19,10 @@ import {
     Button
 } from '@mui/material';
 import Pagination from '@mui/material/Pagination';
+import { role, status } from '../../utils/constant';
 
-function DataTable({ rows, columns }) {
+function UserDataTable({ rows, columns }) {
+    console.log('rows', rows)
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [searchTerm, setSearchTerm] = useState('');
@@ -29,10 +31,6 @@ function DataTable({ rows, columns }) {
     const [selectedUser, setSelectedUser] = useState(null);
 
 
-    const roleMapping = {
-        1: 'Admin',
-        2: 'User',
-    };
     // Handle Pagination
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -132,7 +130,9 @@ function DataTable({ rows, columns }) {
                                 <TableCell>{(page - 1) * rowsPerPage + index + 1}</TableCell>
                                 {columns.slice(1).map((column) => (
                                     <TableCell key={column.key} >
-                                        {column.key == 'role' ? roleMapping[row[column.key]] || row[column.key] : row[column.key]}
+                                        {column.key === 'role' ? role[row[column.key]] || row[column.key]
+                                            : column.key === 'status' ? status[row[column.key]] || row[column.key]
+                                                : row[column.key]}
                                     </TableCell>
                                 ))}
                                 <TableCell style={{ marginLeft: 0, paddingLeft: 0 }}>
@@ -145,7 +145,6 @@ function DataTable({ rows, columns }) {
                                         View
                                     </Button>
                                 </TableCell>
-
                             </TableRow>
                         ))}
                     </TableBody>
@@ -177,15 +176,17 @@ function DataTable({ rows, columns }) {
                                 email: "Email Address",
                                 mobile_number: "Mobile Number",
                                 role: "Role",
+                                status: "Status",
                                 createdAt: "Account Created",
                             }).map(([key, label]) => (
                                 <p key={key}>
                                     <strong>{label}:</strong>
-                                    {key === "role" ? (
-                                        selectedUser.role === 1 ? "Admin" : "User"
-                                    ) : (
-                                        selectedUser[key]
-                                    )}
+                                    {key === "role"
+                                        ? role[selectedUser.role] || "N/A"
+                                        : key === "status"
+                                            ? status[selectedUser.status] || "N/A"
+                                            : selectedUser[key]
+                                    }
                                 </p>
                             ))}
                         </div>
@@ -203,4 +204,4 @@ function DataTable({ rows, columns }) {
     );
 }
 
-export default DataTable;
+export default UserDataTable;

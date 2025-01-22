@@ -1,27 +1,26 @@
 import React, { useEffect, useState } from "react";
 import Sidebar from "../../components/layouts/Sidebar";
 import Footer from "../../components/layouts/Footer";
-import UserDataTable from "../../components/dataTable/UserDataTable";
+import PostDataTable from "../../components/dataTable/PostDataTable";
 import { toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
+import { Link } from "react-router-dom";
 
-function UserList() {
+function PostList() {
     const [rows, setRows] = useState([]);
     const [loading, setLoading] = useState(false);
     const columns = [
         { key: "no", label: "Sr. No." },
-        { key: "first_name", label: "First Name" },
-        { key: "last_name", label: "Last Name" },
-        { key: "email", label: "Email" },
-        { key: "mobile_number", label: "Mobile Number" },
-        { key: "role", label: "Role" },
+        { key: "title", label: "Title" },
+        { key: "description", label: "Description" },
         { key: "status", label: "Status" },
+        { key: "author", label: "Author" },
         { key: "createdAt", label: "Created At" },
         { key: "action", label: "Action" },
     ];
 
     useEffect(() => {
-        const fetchUsers = async () => {
+        const fetchPosts = async () => {
             setLoading(true);
             const token = localStorage.getItem('authToken');
             if (!token) {
@@ -30,7 +29,7 @@ function UserList() {
                 return;
             }
             try {
-                const apiUrl = `${process.env.REACT_APP_BASE_URL}/api/users`;
+                const apiUrl = `${process.env.REACT_APP_BASE_URL}/api/posts`;
                 const response = await fetch(apiUrl, {
                     method: "GET",
                     headers: {
@@ -41,13 +40,14 @@ function UserList() {
                 const data = await response.json();
 
                 if (!response.ok) {
-                    throw new Error(data.message || 'Error fetching user data');
+                    throw new Error(data.message || 'Error fetching post data');
                 }
 
-                const transformedRows = data.data.map(user => ({
-                    ...user,
-                    createdAt: new Date(user.createdAt).toLocaleDateString(),
+                const transformedRows = data.data.map(post => ({
+                    ...post,
+                    createdAt: new Date(post.createdAt).toLocaleDateString(),
                 }));
+
                 setRows(transformedRows);
 
             } catch (error) {
@@ -57,7 +57,7 @@ function UserList() {
             }
         };
 
-        fetchUsers();
+        fetchPosts();
 
     }, [])
 
@@ -71,8 +71,9 @@ function UserList() {
                             <h3 className="page-title">
                                 <span className="page-title-icon bg-gradient-primary text-white me-2">
                                     <i className="mdi mdi-account"></i>
-                                </span> Users List
+                                </span> Posts List
                             </h3>
+                            <Link className="btn btn-primary" to="/posts/create" > Add New Post</Link>
                         </div>
 
                         <div className="row">
@@ -82,7 +83,7 @@ function UserList() {
                                         <div className="profile-class">
                                             <div className="row">
                                                 <div className="col-md-12">
-                                                    <UserDataTable rows={rows} columns={columns} />
+                                                    <PostDataTable rows={rows} columns={columns} setRows={setRows} />
                                                 </div>
                                             </div>
                                         </div>
@@ -99,4 +100,4 @@ function UserList() {
     );
 }
 
-export default UserList;
+export default PostList;
